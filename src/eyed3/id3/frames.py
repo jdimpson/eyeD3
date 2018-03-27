@@ -1369,7 +1369,7 @@ class ChapterFrame(Frame):
                                                         DESCRIPTION, url)
 
 
-# XXX: This data structure pretty sucks, or it is beautiful anarchy
+# XXX: This data structure pretty much sucks, or it is beautiful anarchy
 class FrameSet(dict):
     def __init__(self):
         dict.__init__(self)
@@ -1456,6 +1456,18 @@ class FrameSet(dict):
     @requireBytes(1)
     def __setitem__(self, fid, frame):
         assert(fid == frame.id)
+
+        # TODO: This needs to start as not being on by default
+        # Check for frame validity
+        if fid in self:
+            # Dup text frames
+            if fid[0:1] == b"T" and fid[1:] != b"XXX":
+                log.warning("Dropping duplicate text frame: %s" %
+                            fid.decode("ascii"))
+                return
+
+            # TODO: Dup user text frames (same description and lang)
+            # TODO: ... consult specs
 
         if fid in self:
             self[fid].append(frame)
