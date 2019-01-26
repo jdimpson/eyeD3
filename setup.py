@@ -8,6 +8,8 @@ import warnings
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
+import parcyl
+
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
@@ -55,14 +57,6 @@ def getPackageInfo():
         vparts = info_dict["version"].split("-", 1)
     info_dict["release"] = vparts[1] if len(vparts) > 1 else "final"
 
-    # Requirements
-    requirements, extras = requirements_yaml()
-    info_dict["install_requires"] = requirements["main"] \
-                                        if "main" in requirements else []
-    info_dict["tests_require"] = requirements["test"] \
-                                     if "test" in requirements else []
-    info_dict["extras_require"] = extras
-
     # Info
     readme = ""
     if os.path.exists("README.rst"):
@@ -73,29 +67,7 @@ def getPackageInfo():
         readme + "\n\n" +\
         "See the {} file for release history and changes.".format(hist)
 
-    return info_dict, requirements
-
-
-def requirements_yaml():
-    prefix = "extra_"
-    reqs = {}
-    reqfile = os.path.join("requirements", "requirements.yml")
-    if os.path.exists(reqfile):
-        with io.open(reqfile, encoding='utf-8') as fp:
-            curr = None
-            for line in [l for l in [l.strip() for l in fp.readlines()]
-                     if l and not l.startswith("#")]:
-                if curr is None or line[0] != "-":
-                    curr = line.split(":")[0]
-                    reqs[curr] = []
-                else:
-                    assert line[0] == "-"
-                    r = line[1:].strip()
-                    if r:
-                        reqs[curr].append(r.strip())
-
-    return (reqs, {x[len(prefix):]: vals
-                     for x, vals in reqs.items() if x.startswith(prefix)})
+    return info_dict
 
 
 class PipInstallCommand(install, object):
@@ -106,7 +78,7 @@ class PipInstallCommand(install, object):
         return super(PipInstallCommand, self).run()
 
 
-PKG_INFO, REQUIREMENTS = getPackageInfo()
+PKG_INFO = getPackageInfo()
 if PKG_INFO["release"].startswith("a"):
     #classifiers.append("Development Status :: 1 - Planning")
     #classifiers.append("Development Status :: 2 - Pre-Alpha")
@@ -141,7 +113,6 @@ if sys.argv[1:] and sys.argv[1] == "--release-name":
     print(PKG_INFO["release_name"])
     sys.exit(0)
 else:
-    test_requirements = REQUIREMENTS["test"]
     # The extra command line options we added cause warnings, quell that.
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message="Unknown distribution option")
