@@ -1337,7 +1337,7 @@ class FileInfo:
         self.initStatTimes()
 
 
-class AccessorBase(object):
+class AccessorBase:
     def __init__(self, fid, fs, match_func=None):
         self._fid = fid
         self._fs = fs
