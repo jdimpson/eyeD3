@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from io import BytesIO
 from codecs import ascii_encode
 from collections import namedtuple
@@ -13,10 +12,10 @@ from . import ID3_V2, ID3_V2_3, ID3_V2_4
 from . import (LATIN1_ENCODING, UTF_8_ENCODING, UTF_16BE_ENCODING,
                UTF_16_ENCODING, DEFAULT_LANG)
 from .headers import FrameHeader
-
-
 from ..utils.log import getLogger
+
 log = getLogger(__name__)
+ISO_8859_1 = "iso-8859-1"
 
 
 class FrameException(Error):
@@ -397,43 +396,48 @@ class DateFrame(TextFrame):
 
 
 class UrlFrame(Frame):
-    @requireBytes("url")
-    def __init__(self, id, url=b""):
+
+    def __init__(self, id, url=""):
         assert(id in URL_FIDS or id == USERURL_FID)
         super(UrlFrame, self).__init__(id)
-        self.encoding = LATIN1_ENCODING
+
+        self.encoding = LATIN1_ENCODING   # Per the specs
         self.url = url
 
     @property
     def url(self):
         return self._url
 
-    @requireBytes(1)
     @url.setter
     def url(self, url):
+        if isinstance(url, bytes):
+            url = str(url, ISO_8859_1)
+        else:
+            _ = url.encode(ISO_8859_1)  # Likewise, it must encode
+
         self._url = url
 
     def parse(self, data, frame_header):
         super(UrlFrame, self).parse(data, frame_header)
-        # The URL is ascii, ensure
+
         try:
-            self.url = unicode(self.data, "ascii").encode("ascii")
+            self.url = self.data
         except UnicodeDecodeError:
             log.warning("Non ascii url, clearing.")
             self.url = ""
 
     def render(self):
-        self.data = self.url
+        self.data = self.url.encode(ISO_8859_1)
         return super(UrlFrame, self).render()
 
 
 class UserUrlFrame(UrlFrame):
     """
     Data string format:
-    encoding (one byte) + description + b"\x00" + url (ascii)
+    encoding (one byte) + description + b"\x00" + url (iso-8859-1)
     """
     @requireUnicode("description")
-    def __init__(self, id=USERURL_FID, description="", url=b""):
+    def __init__(self, id=USERURL_FID, description="", url=""):
         UrlFrame.__init__(self, id, url=url)
         assert(self.id == USERURL_FID)
 
@@ -469,7 +473,7 @@ class UserUrlFrame(UrlFrame):
         self._initEncoding()
         data = (self.encoding +
                 self.description.encode(id3EncodingToString(self.encoding)) +
-                self.text_delim + self.url)
+                self.text_delim + self.url.encode(ISO_8859_1))
         self.data = data
         # Calling Frame, not the base.
         return Frame.render(self)
