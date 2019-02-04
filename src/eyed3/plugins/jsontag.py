@@ -1,3 +1,4 @@
+import base64
 import inspect
 from json import dumps
 
@@ -24,7 +25,7 @@ class JsonTagPlugin(eyed3.plugins.LoaderPlugin):
 
     def handleFile(self, f, *args, **kwargs):
         super().handleFile(f)
-        if self.audio_file and self.audio_file.tag:
+        if self.audio_file and self.audio_file.info and self.audio_file.tag:
             json = audioFileToJson(self.audio_file)
             print(dumps(json, indent=2 if not self.args.compact else None,
                         sort_keys=self.args.sort))
@@ -37,10 +38,12 @@ def audioFileToJson(audio_file):
     tdict["path"] = audio_file.path
 
     info = {}
-    info["time_secs"] = audio_file.info.time_secs
+    info["time_secs"] = int(audio_file.info.time_secs * 100.0) / 100.0
     # TODO: A lot more in info
+    tdict["info"] = info
 
-    for name in [m for m in dir(tag) if not m.startswith("_")]:
+    # Tag fields
+    for name in [m for m in dir(tag) if not m.startswith("_") and m not in _tag_exclusions]:
         member = getattr(tag, name)
 
         if name not in _tag_map:
@@ -53,15 +56,15 @@ def audioFileToJson(audio_file):
             log.warning(f"Unexpected type for member {name}: {member.__class__}")
             continue
 
-        if isinstance(member, (str, int)):
+        if isinstance(member, (str, int, bool)):
             tdict[name] = member
         elif isinstance(member, eyed3.core.Date):
             tdict[name] = str(member)
         elif isinstance(member, eyed3.id3.Genre):
             tdict[name] = member.name
-        elif isinstance(member, bool):
-            ...  # TODO
         elif isinstance(member, bytes):
+            tdict[name] = base64.b64encode(member).decode("ascii")
+        elif isinstance(member, eyed3.id3.tag.ArtistOrigin):
             ...  # TODO
         elif isinstance(member, (list, tuple)):
             ...  # TODO
@@ -113,7 +116,6 @@ _tag_map = {
     'privates': eyed3.id3.tag.PrivatesAccessor,
     'publisher': str,
     'publisher_url': str,
-    'read_only': bool,
     'recording_date': eyed3.core.Date,
     'release_date': eyed3.core.Date,
     'table_of_contents': eyed3.id3.tag.TocAccessor,
@@ -125,4 +127,8 @@ _tag_map = {
     'user_text_frames': eyed3.id3.tag.UserTextsAccessor,
     'user_url_frames': eyed3.id3.tag.UserUrlsAccessor,
     'version': tuple,
+}
+
+_tag_exclusions = {
+    "read_only": bool,
 }
