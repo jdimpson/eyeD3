@@ -25,7 +25,7 @@ from codecs import ascii_encode
 
 from ..utils import requireUnicode, chunkCopy, datePicker
 from .. import core
-from ..core import TXXX_ALBUM_TYPE, TXXX_ARTIST_ORIGIN, ALBUM_TYPE_IDS
+from ..core import TXXX_ALBUM_TYPE, TXXX_ARTIST_ORIGIN, ALBUM_TYPE_IDS, ArtistOrigin
 from .. import Error
 from . import (ID3_ANY_VERSION, ID3_V1, ID3_V1_0, ID3_V1_1,
                ID3_V2, ID3_V2_2, ID3_V2_3, ID3_V2_4, versionToString)
@@ -1264,17 +1264,16 @@ class Tag(core.Tag):
 
     @property
     def artist_origin(self):
-        """Returns a 3-tuple: (city, state, country) Any may be ``None``."""
-        if TXXX_ARTIST_ORIGIN in self.user_text_frames:
-            origin = self.user_text_frames.get(TXXX_ARTIST_ORIGIN).text
-            vals = origin.split('\t')
-        else:
-            vals = [None] * 3
+        """Returns None or a `ArtistOrigin` 3-tuple: (city, state, country) Any may be ``None``."""
+        if TXXX_ARTIST_ORIGIN not in self.user_text_frames:
+            return None
+
+        origin = self.user_text_frames.get(TXXX_ARTIST_ORIGIN).text
+        vals = origin.split('\t')
 
         vals.extend([None] * (3 - len(vals)))
         vals = [None if not v else v for v in vals]
-        assert(len(vals) == 3)
-        return vals
+        return ArtistOrigin(*vals)
 
     @artist_origin.setter
     def artist_origin(self, city, state, country):

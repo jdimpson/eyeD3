@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 """Basic core types and utilities."""
 import os
 import time
 import functools
 import pathlib
+from collections import namedtuple
+
 from . import LOCAL_FS_ENCODING
 from .utils import guessMimetype
 from . import compat
-
 from .utils.log import getLogger
 log = getLogger(__name__)
 
@@ -42,6 +42,8 @@ TXXX_ARTIST_ORIGIN = "eyeD3#artist_origin"
 """A key that can be used in a TXXX frame to specify the origin of an
 artist/band. i.e. where they are from.
 The format is: city<tab>state<tab>country"""
+
+ArtistOrigin = namedtuple("ArtistOrigin", ("city", "state", "country"))
 
 
 def load(path, tag_version=None):
