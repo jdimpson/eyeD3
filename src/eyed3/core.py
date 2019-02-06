@@ -3,6 +3,7 @@ import os
 import time
 import functools
 import pathlib
+import dataclasses
 from collections import namedtuple
 
 from . import LOCAL_FS_ENCODING
@@ -43,7 +44,18 @@ TXXX_ARTIST_ORIGIN = "eyeD3#artist_origin"
 artist/band. i.e. where they are from.
 The format is: city<tab>state<tab>country"""
 
-ArtistOrigin = namedtuple("ArtistOrigin", ("city", "state", "country"))
+
+@dataclasses.dataclass
+class ArtistOrigin:
+    city: str
+    state: str
+    country: str
+
+    def __bool__(self):
+        return bool(self.city or self.state or self.country)
+
+    def id3Encode(self):
+        return "\t".join([(o if o else "") for o in dataclasses.astuple(self)])
 
 
 def load(path, tag_version=None):

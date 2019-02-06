@@ -1264,7 +1264,8 @@ class Tag(core.Tag):
 
     @property
     def artist_origin(self):
-        """Returns None or a `ArtistOrigin` 3-tuple: (city, state, country) Any may be ``None``."""
+        """Returns None or a `ArtistOrigin` dataclass: (city, state, country) Any may be ``None``.
+        """
         if TXXX_ARTIST_ORIGIN not in self.user_text_frames:
             return None
 
@@ -1276,14 +1277,11 @@ class Tag(core.Tag):
         return ArtistOrigin(*vals)
 
     @artist_origin.setter
-    def artist_origin(self, city, state, country):
-        vals = (city, state, country)
-        vals = [None if not v else v for v in vals]
-        if vals == (None, None, None):
+    def artist_origin(self, origin: ArtistOrigin):
+        if origin is None or origin == (None, None, None):
             self.user_text_frames.remove(TXXX_ARTIST_ORIGIN)
         else:
-            assert(len(vals) == 3)
-            self.user_text_frames.set('\t'.join(vals), TXXX_ARTIST_ORIGIN)
+            self.user_text_frames.set(origin.id3Encode(), TXXX_ARTIST_ORIGIN)
 
     def frameiter(self, fids=None):
         """A iterator for tag frames. If ``fids`` is passed it must be a list
