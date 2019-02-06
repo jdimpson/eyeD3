@@ -4,9 +4,7 @@ import unittest
 import eyed3
 from eyed3.core import Date
 from eyed3.id3 import frames
-from eyed3.compat import unicode, BytesType
 from eyed3.id3 import Tag, ID3_DEFAULT_VERSION, ID3_V2_3, ID3_V2_4
-from ..compat import *
 from .. import DATA_D
 
 
@@ -29,10 +27,10 @@ def testFileInfoConstructor():
 
     # Both bytes and unicode input file names must be accepted and the former
     # must be converted to unicode.
-    for name in [__file__, unicode(__file__)]:
+    for name in [__file__, str(__file__)]:
         fi = FileInfo(name)
-        assert type(fi.name) is unicode
-        assert name == unicode(name)
+        assert type(fi.name) is str
+        assert name == str(name)
         assert fi.tag_size == 0
 
     # FIXME Passing invalid unicode
@@ -459,15 +457,15 @@ def testTagImages():
     assert (img.mime_type == "-->")
     assert (img._mime_type == b"-->")
 
-    # Unicode mime-type in, coverted to bytes
+    # Unicode mime-type in, converted to bytes
     tag = Tag()
     tag.images.set(ImageFrame.BACK_COVER, b"\x00", "img/jpg")
     img = tag.images[0]
-    assert isinstance(img._mime_type, BytesType)
+    assert isinstance(img._mime_type, bytes)
     img.mime_type = ""
-    assert isinstance(img._mime_type, BytesType)
+    assert isinstance(img._mime_type, bytes)
     img.mime_type = None
-    assert isinstance(img._mime_type, BytesType)
+    assert isinstance(img._mime_type, bytes)
     assert img.mime_type == ""
 
 
@@ -966,7 +964,7 @@ def testSortOrderConversions():
     # 2.4 frames to 2.3
     for fid in [b"TSOA", b"TSOP", b"TSOT"]:
         frame = frames.TextFrame(fid)
-        frame.text = unicode(fid)
+        frame.text = str(fid)
         tag.frame_set[fid] = frame
     try:
         tag.save(test_file, version=eyed3.id3.ID3_V2_3)
@@ -1148,7 +1146,7 @@ def testChapters():
 
     assert len(t2.chapters) == 4
     for i in range(1, 5):
-        c = t2.chapters.get(unicode("c%d" % i).encode("latin1"))
+        c = t2.chapters.get(str("c%d" % i).encode("latin1"))
         if i == 2:
             assert c.title is None
             assert c.subtitle is None

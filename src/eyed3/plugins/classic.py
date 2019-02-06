@@ -5,8 +5,8 @@ from functools import partial
 from argparse import ArgumentTypeError
 
 from eyed3.plugins import LoaderPlugin
-from eyed3 import core, id3, mp3, utils, compat
-from eyed3.utils import makeUniqueFileName
+from eyed3 import core, id3, mp3, utils
+from eyed3.utils import makeUniqueFileName, b
 from eyed3.utils.console import (printMsg, printError, printWarning, boldText,
                                  HEADER_COLOR, Fore, getTtySize)
 from eyed3.id3.frames import ImageFrame
@@ -109,7 +109,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
             vals = _splitArgs(arg, 2)
             desc = vals[0]
             lang = vals[1] if len(vals) > 1 else id3.DEFAULT_LANG
-            return (desc, compat.b(lang)[:3] or id3.DEFAULT_LANG)
+            return (desc, b(lang)[:3] or id3.DEFAULT_LANG)
 
         def DescTextArg(arg):
             """DESCRIPTION:TEXT"""
@@ -156,7 +156,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
                 raise ArgumentTypeError("text required")
             desc = vals[1] if len(vals) > 1 else ""
             lang = vals[2] if len(vals) > 2 else id3.DEFAULT_LANG
-            return (text, desc, compat.b(lang)[:3])
+            return (text, desc, b(lang)[:3])
 
         def LyricsArg(arg):
             text, desc, lang = CommentArg(arg)
@@ -386,7 +386,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
         gid3.add_argument("--add-popularity", action="append",
                           type=PopularityArg, dest="popularities", default=[],
                           metavar="EMAIL:RATING[:PLAY_COUNT]",
-                          help=ARGS_HELP["--add-popularty"])
+                          help=ARGS_HELP["--add-popularity"])
         gid3.add_argument("--remove-popularity", action="append", type=str,
                           dest="remove_popularity", default=[],
                           metavar="EMAIL",
@@ -911,7 +911,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
             for text, desc, lang in arg:
                 printWarning("Setting %s: %s/%s" %
                              (what, desc, str(lang, "ascii")))
-                accessor.set(text, desc, compat.b(lang))
+                accessor.set(text, desc, b(lang))
                 retval = True
 
         # --play-count
@@ -926,7 +926,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
                 tag.play_count = pc
             retval = True
 
-        # --add-popularty
+        # --add-popularity
         for email, rating, play_count in self.args.popularities:
             tag.popularities.set(email.encode("latin1"), rating, play_count)
             retval = True
@@ -1002,7 +1002,7 @@ optional. For example, 2012-03 is valid, 2012--12 is not.
 
         # --remove-frame
         for fid in self.args.remove_fids:
-            assert(isinstance(fid, compat.BytesType))
+            assert(isinstance(fid, bytes))
             if fid in tag.frame_set:
                 del tag.frame_set[fid]
                 retval = True
@@ -1121,7 +1121,7 @@ ARGS_HELP = {
         "--write-objects": "Causes all attached objects (GEOB frames) to be "
                            "written to the specified directory.",
 
-        "--add-popularty": "Adds a pupularity metric. There may be multiples "
+        "--add-popularity": "Adds a pupularity metric. There may be multiples "
                            "popularity values, but each must have a unique "
                            "email address component. The rating is a number "
                            "between 0 (worst) and 255 (best). The play count "

@@ -4,11 +4,9 @@ import time
 import functools
 import pathlib
 import dataclasses
-from collections import namedtuple
 
 from . import LOCAL_FS_ENCODING
 from .utils import guessMimetype
-from . import compat
 from .utils.log import getLogger
 log = getLogger(__name__)
 
@@ -401,7 +399,7 @@ class Date(object):
     @staticmethod
     def parse(s):
         """Parses date strings that conform to ISO-8601."""
-        if not isinstance(s, compat.UnicodeType):
+        if not isinstance(s, str):
             s = s.decode("ascii")
         s = s.strip('\x00')
 
