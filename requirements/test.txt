@@ -1,25 +1,19 @@
 Faker>=0.7.0                             # Required by factory-boy
 factory-boy==2.11.1
 pbr>=0.11                                # Required by mock
-six>=1.9                                 # Required by mock
+six>=1.9,>=1.10.0,<2,>=1.0.0             # Required by mock,pytest,tox
 mock==2.0.0 ; python_version < "3.4"
 atomicwrites>=1.0                        # Required by pytest
 attrs>=17.4.0                            # Required by pytest
 more-itertools>=4.0.0                    # Required by pytest
-pluggy>=0.7                              # Required by pytest
-py>=1.5.0                                # Required by pytest
-setuptools==40.6.3                       # Required by pytest
-six>=1.10.0                              # Required by pytest
-pytest==4.1.1
-coverage>=4.4                            # Required by pytest-cov
+pluggy>=0.7,<1,>=0.3.0                   # Required by pytest,tox
+py>=1.5.0,<2,>=1.4.17                    # Required by pytest,tox
+setuptools>=30.0.0                       # Required by pytest,tox
 pytest>=3.6                              # Required by pytest-cov
+coverage>=4.4                            # Required by pytest-cov
 pytest-cov==2.6.1
 pytest-runner==4.2
-filelock<4,>=3.0.0                       # Required by tox
-pluggy<1,>=0.3.0                         # Required by tox
-py>=1.4.17,<2                            # Required by tox
-setuptools>=30.0.0                       # Required by tox
-six<2,>=1.0.0                            # Required by tox
+filelock>=3.0.0,<4                       # Required by tox
 toml>=0.9.4                              # Required by tox
 virtualenv>=1.11.2                       # Required by tox
 tox==3.7.0

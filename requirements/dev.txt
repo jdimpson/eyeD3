@@ -2,39 +2,42 @@ check-manifest==0.37
 cogapp==2.5.1
 eventlet>=0.15.0                         # Required by detox
 py>=1.4.27                               # Required by detox
-tox>=3.5,<3.7                            # Required by detox
+tox<3.7,>=3.5                            # Required by detox
 detox==0.19
-mccabe<0.7.0,>=0.6.0                     # Required by flake8
-pycodestyle>=2.4.0,<2.5.0                # Required by flake8
-pyflakes<2.1.0,>=2.0.0                   # Required by flake8
-setuptools>=30                           # Required by flake8
-flake8==3.6.0
+entrypoints>=0.3.0,<0.4.0                # Required by flake8
+mccabe>=0.6.0,<0.7.0                     # Required by flake8
+pycodestyle<2.6.0,>=2.5.0                # Required by flake8
+pyflakes<2.2.0,>=2.1.0                   # Required by flake8
+flake8==3.7.5
 PyYaml==3.13                             # Required by nicfit.py
 attrs==18.2.0                            # Required by nicfit.py
 deprecation==2.0.6                       # Required by nicfit.py
 nicfit.py[cookiecutter]==0.8.3
 parcyl[requirements]==1.0a1
 fancycompleter>=0.8                      # Required by pdbpp
-pygments==2.3.1                          # Required by pdbpp
+pygments>=2.0                            # Required by pdbpp,Sphinx
 wmctrl==0.3                              # Required by pdbpp
-pdbpp==0.9.3
+pdbpp==0.9.5
 Jinja2>=2.3                              # Required by Sphinx
-Pygments>=2.0                            # Required by Sphinx
 alabaster>=0.7,<0.8                      # Required by Sphinx
 babel>=1.3,!=2.0                         # Required by Sphinx
 docutils>=0.11                           # Required by Sphinx
 imagesize==1.1.0                         # Required by Sphinx
-packaging==18.0                          # Required by Sphinx
-requests>=2.0.0                          # Required by Sphinx
-setuptools==40.6.3                       # Required by Sphinx
+packaging==19.0                          # Required by Sphinx
+requests>=2.0.0,!=2.15,>=2.5.0,!=2.16    # Required by Sphinx,twine
+setuptools>=0.7.0                        # Required by Sphinx,twine
 six>=1.5                                 # Required by Sphinx
 snowballstemmer>=1.1                     # Required by Sphinx
 sphinxcontrib-websupport==1.1.0          # Required by Sphinx
-Sphinx==1.8.3
-sphinx==1.8.3                            # Required by sphinx-issues
+Sphinx>=1.7.1                            # Required by sphinx-issues,sphinx-rtd-theme,sphinxcontrib-paverutils
 sphinx-issues==1.2.0
-sphinx==1.8.3                            # Required by sphinx-rtd-theme
 sphinx-rtd-theme==0.4.2
 hg+https://nicfit@bitbucket.org/nicfit/sphinxcontrib-bitbucket
 Paver>=1.02.0                            # Required by sphinxcontrib-paverutils
-Sphinx>=1.7.1                            # Required by sphinxcontrib-paverutils
+sphinxcontrib-paverutils==1.17.0
+pkginfo>=1.4.2                           # Required by twine
+readme-renderer>=21.0                    # Required by twine
+requests-toolbelt>=0.8.0                 # Required by twine
+tqdm>=4.14                               # Required by twine
+twine==1.12.1
+wheel==0.32.3

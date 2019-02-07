@@ -138,7 +138,7 @@ clean-docs:
 	$(MAKE) -C docs clean
 	-rm README.html
 
-pre-release: lint test changelog requirements
+pre-release: lint test changelog
 	@# Keep docs off pre-release target list, else it is pruned during 'release' but
 	@# after a clean.
 	@$(MAKE) docs
@@ -163,7 +163,7 @@ pre-release: lint test changelog requirements
 
 
 requirements:
-	parcyl requirements --upgrade --deep
+	parcyl.py requirements --upgrade --deep
 
 
 changelog:
