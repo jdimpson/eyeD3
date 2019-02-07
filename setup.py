@@ -13,10 +13,6 @@ setup.attrs["download_url"] = (
     f"{setup.attrs['github_url']}/releases/downloads/v{setup.attrs['version']}/{gz}"
 )
 
-
-
-
-
 def package_files(directory, prefix=".."):
     paths = []
     for (path, _, filenames) in os.walk(directory):

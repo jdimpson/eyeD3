@@ -1,6 +1,21 @@
-# -*- coding: utf-8 -*-
-__version__ = "0.8.9"
-__release_name__ = "Descent Into..."
+from collections import namedtuple
+
+
+def __parse_version(v):                                       # pragma: nocover
+    ver, rel = v, "final"
+    for c in ("a", "b", "c"):
+        parsed = v.split(c)
+        if len(parsed) == 2:
+            ver, rel = (parsed[0], c + parsed[1])
+
+    v = tuple((int(v) for v in ver.split(".")))
+    ver_info = namedtuple("Version", "major, minor, maint, release")(
+        *(v + (tuple((0,)) * (3 - len(v))) + tuple((rel,))))
+    return ver, rel, ver_info
+
+
+__version__ = "0.9a0"
+__release_name__ = ""
 __years__ = "2002-2019"
 
 _, __release__, __version_info__ = None, None, None
