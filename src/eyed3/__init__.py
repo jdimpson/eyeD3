@@ -1,6 +1,6 @@
 import sys
 import locale
-from .__about__ import __version__ as version
+from .__about__ import version
 
 _DEFAULT_ENCODING = "latin1"
 LOCAL_ENCODING = locale.getpreferredencoding(do_setlocale=True)

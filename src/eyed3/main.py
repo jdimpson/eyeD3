@@ -152,7 +152,7 @@ def setFileScannerOpts(arg_parser, paths_metavar="PATH",
 def makeCmdLineParser(subparser=None):
     from eyed3.utils import ArgumentParser
 
-    p = (ArgumentParser(prog=eyed3.__about__.__project_name__, add_help=True)
+    p = (ArgumentParser(prog=eyed3.__about__.project_name, add_help=True)
             if not subparser else subparser)
 
     setFileScannerOpts(p)
@@ -262,14 +262,14 @@ def _main():
     except KeyboardInterrupt:
         retval = 0
     except (StopIteration, IOError) as ex:
-        eyed3.utils.console.printError(UnicodeType(ex))
+        eyed3.utils.console.printError(str(ex))
         retval = 1
     except Exception as ex:
         eyed3.utils.console.printError("Uncaught exception: %s\n" % str(ex))
         eyed3.log.exception(ex)
         retval = 1
 
-        if args.debug_pdb:
+        if args and args.debug_pdb:
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", PendingDeprecationWarning)

@@ -17,7 +17,7 @@
 #
 ################################################################################
 import logging
-from ..__about__ import __version__ as VERSION
+from ..__about__ import version as _VERSION
 
 DEFAULT_FORMAT = '%(name)s:%(levelname)s: %(message)s'
 MAIN_LOGGER = "eyed3"
@@ -53,8 +53,8 @@ def getLogger(name):
 
 # The main 'eyed3' logger
 log = getLogger(MAIN_LOGGER)
-log.debug("eyeD3 version " + VERSION)
-del VERSION
+log.debug("eyeD3 version " + _VERSION)
+del _VERSION
 
 
 def initLogging():
