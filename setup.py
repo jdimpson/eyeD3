@@ -16,4 +16,3 @@ setup(package_dir={"eyed3": "./src/eyed3"},
       include_package_data=True,
       package_data={},
      )
-
