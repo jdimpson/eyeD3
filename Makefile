@@ -79,7 +79,7 @@ clean-patch:
 	find . -name '*.orig' -exec rm -f '{}' \;
 
 lint:
-	flake8 $(SRC_DIRS)
+	tox -e lint
 
 _PYTEST_OPTS=
 ifdef TEST_PDB
@@ -146,7 +146,7 @@ pre-release: lint test changelog
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
-	check-manifest
+	tox -e check-manifest
 	@if git tag -l | grep -E '^$(shell echo $${RELEASE_TAG} | sed 's|\.|.|g')$$' > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \

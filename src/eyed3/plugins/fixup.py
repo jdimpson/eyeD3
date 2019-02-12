@@ -173,7 +173,7 @@ Album types:
             # The recording date is most meaningful for live music.
             recording_date = reduceDate("recording date",
                                         rec_dates | orel_dates | rel_dates)
-            rec_dates = set([recording_date])
+            rec_dates = {recording_date}
 
             # Want when these set if they may recording time.
             orel_dates.difference_update(rec_dates)
@@ -182,7 +182,7 @@ Album types:
             if orel_dates:
                 original_release_date = reduceDate("original release date",
                                                    orel_dates | rel_dates)
-            orel_dates = set([original_release_date])
+            orel_dates = {original_release_date}
 
             if rel_dates | orel_dates:
                 release_date = reduceDate("release date",
@@ -193,25 +193,22 @@ Album types:
             # The release date is most meaningful for comps, other track dates
             # may differ.
             if len(rel_dates) != 1:
-                release_date = reduceDate("release date",
-                                          rel_dates | orel_dates)
-                rel_dates = set([release_date])
+                release_date = reduceDate("release date", rel_dates | orel_dates)
             else:
                 release_date = list(rel_dates)[0]
         else:
             if len(orel_dates) != 1:
                 # The original release date is most meaningful for studio music.
                 original_release_date = reduceDate("original release date",
-                                                   orel_dates | rel_dates |
-                                                   rec_dates)
-                orel_dates = set([original_release_date])
+                                                   orel_dates | rel_dates | rec_dates)
+                orel_dates = {original_release_date}
             else:
                 original_release_date = list(orel_dates)[0]
 
             if len(rel_dates) != 1:
                 release_date = reduceDate("release date",
                                           rel_dates | orel_dates)
-                rel_dates = set([release_date])
+                rel_dates = {release_date}
             else:
                 release_date = list(rel_dates)[0]
 
@@ -386,8 +383,7 @@ Album types:
             for what, d in [("Release", rel_date),
                             ("Original", orel_date),
                             ("Recording", rec_date)]:
-                print(Fore.BLUE + ("%s date: " % what) + Style.RESET_ALL +
-                        str(d))
+                print(f"{Fore.BLUE} {what} date: {Style.RESET_ALL} {d}")
 
             num_audio_files = len(audio_files)
             track_nums = set([f.tag.track_num[0] for f in audio_files])
