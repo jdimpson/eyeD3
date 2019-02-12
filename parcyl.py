@@ -10,8 +10,9 @@ import configparser
 from enum import Enum
 from pathlib import Path
 from operator import attrgetter
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
+from distutils.version import StrictVersion
 from pkg_resources import (RequirementParseError,
                            Requirement as _RequirementBase)
 from setuptools.command.test import test as _TestCommand
@@ -25,6 +26,8 @@ try:
     configure_logging(0)
 except ImportError:
     johnnydep = None
+
+VERSION = "1.0a4"
 
 _EXTRA = "extra_"
 _REQ_D = Path("requirements")
@@ -59,8 +62,6 @@ EXTRA_ATTRS = {
     "github_url": "github_url",
     "years": "years",
 }
-
-find_packages = setuptools.find_packages
 
 
 def setup(**setup_attrs):
@@ -99,8 +100,9 @@ class SetupCfg(configparser.ConfigParser):
                 attrs["pypi_name"] = val
                 attrs["project_slug"] = val.lower()
             elif attr == "version" and val:
-                _, release, version_info = self._parseVersion(val)
-                attrs["release"] = release
+                # Note, val becomes normalized
+                val, version_info = parseVersion(val)
+                attrs["release"] = version_info.release
                 attrs["version_info"] = version_info
             elif attr == "classifiers" and val:
                 val = list([c.strip() for c in val.split("\n") if c.strip()])
@@ -137,19 +139,6 @@ class SetupCfg(configparser.ConfigParser):
                 raise ValueError(f"`{setup_arg}` must be set via requirements file.")
 
         return requirements
-
-    @staticmethod
-    def _parseVersion(v):
-        ver, rel = v, "final"
-        for c in ("a", "b", "c"):
-            parsed = v.split(c)
-            if len(parsed) == 2:
-                ver, rel = (parsed[0], c + parsed[1])
-
-        v = tuple((int(v) for v in ver.split(".")))
-        ver_info = namedtuple("Version", "major, minor, maint, release")(
-            *(v + (tuple((0,)) * (3 - len(v))) + tuple((rel,))))
-        return ver, rel, ver_info
 
 
 class Setup:
@@ -269,7 +258,30 @@ class Requirement:
             s += f"[{','.join(self.extras)}]"
 
         if specs == self.SpecsOpt.CURRENT:
-            s += ",".join([f"{op}{ver}" for op, ver in self.specs])
+            final_specs = []
+            op_specs = defaultdict(list)
+            for op, ver in self.specs:
+                op_specs[op].append(ver)
+            for op, versions in op_specs.items():
+                if len(versions) > 1:
+                    if op[0] == ">":
+                        op_specs[op] = [sorted(versions, key=StrictVersion, reverse=True).pop(0)]
+                    elif op[0] == "<":
+                        op_specs[op] = [sorted(versions, key=StrictVersion, reverse=False).pop(0)]
+                    elif op[0] == "=":
+                        raise ValueError(f"Version conflict: ==[{','.join(versions)}]")
+                    elif op[0] == "!":
+                        pass  # All excluded version get listed
+                    elif op[0] == "~":
+                        pass  # Hmm, let pip figure it out.
+                    else:
+                        raise NotImplementedError(f"No support for op {op}")
+
+            for op, versions in op_specs.items():
+                for v in versions:
+                    final_specs.append((op, v))
+
+            s += ",".join([f"{op}{ver}" for op, ver in sorted(final_specs, reverse=True)])
         elif specs == self.SpecsOpt.VERSION_INSTALLED and self.version_installed:
             s += f"=={self.version_installed}"
         elif specs == self.SpecsOpt.VERSION_LATEST and self.version_latest_in_spec:
@@ -406,7 +418,7 @@ class SetupRequirements:
                 reqs[opt] = list()
                 deps = req_config.get(_CFG_REQS_SECT, opt)
                 if deps:
-                    for line in deps.split("\n"):
+                    for line in [l for l in deps.split("\n") if l.strip()]:
                         reqs[opt] += [Requirement.parse(s.strip()) for s in line.split(",")]
 
         return reqs
@@ -495,7 +507,10 @@ class RequirementsDotText:
 
             if r.key in all:
                 curr = all[r.key]
-                curr.required_by.append(r.required_by.pop())
+
+                if r.required_by:
+                    curr.required_by.append(r.required_by.pop())
+
                 for spec in r.specs:
                     if spec not in curr.specs:
                         curr.specs.append(spec)
@@ -592,24 +607,60 @@ class PyTestCommand(TestCommand):
         sys.exit(errno)
 
 
-def main():
+def find_package_files(directory, prefix=".."):
+    paths = []
+    for (path, _, filenames) in os.walk(directory):
+        if "__pycache__" in path:
+            continue
+        for filename in filenames:
+            if filename.endswith(".pyc"):
+                continue
+            paths.append(os.path.join(prefix, path, filename))
+    return paths
+
+
+def parseVersion(v):
+    from pkg_resources import parse_version
+    from pkg_resources.extern.packaging.version import Version
+
+    # Some validation and normalization (e.g. 1.0-a1 -> 1.0a1)
+    V = parse_version(v)
+    if not isinstance(V, Version):
+        raise ValueError(f"Invalid version: {v}")
+
+    ver = str(V)
+    if V._version.pre:
+        rel = "".join([str(v) for v in V._version.pre])
+    else:
+        rel = "final"
+
+    # Although parsed the following components are not captured: post, dev, local, epoch
+    Version = namedtuple("Version", "major, minor, maint, release")
+    ver_info = Version(V._version.release[0],
+                       V._version.release[1] if len(V._version.release) > 1 else 0,
+                       V._version.release[2] if len(V._version.release) > 2 else 0,
+                       rel)
+    return ver, ver_info
+
+
+def _main():
     import argparse
-    config = SetupCfg()
 
     p = argparse.ArgumentParser(description="Python project packaging helper.")
-    p.add_argument("--version", action="version", version=config.attrs["version"])
+    p.add_argument("--version", action="version", version=VERSION)
 
     subcmds = p.add_subparsers(dest="cmd")
-    subcmds.add_parser("install", help="Write a `parcyl.py` file to the current directory.")
+    inst_p = subcmds.add_parser("install",
+                                help="Write a `parcyl.py` file to the current directory.")
+    inst_p.add_argument("--force", action="store_true", help="Overwrite an existing parcyl.py")
+
     reqs_p = subcmds.add_parser("requirements",
                                 help="Generate and freeze requirements (setup.cfg -> *.txt)")
-
     version_updater_grp = reqs_p.add_mutually_exclusive_group()
     version_updater_grp.add_argument("-F", "--freeze", action="store_true",
                         help="Pin packages to currently install versions")
     version_updater_grp.add_argument("-U", "--upgrade", action="store_true",
                         help="Pin packages to latest version matching version specs.")
-
     reqs_p.add_argument("-D", "--deep", action="store_true",
                         help="Include the dependencies of packages.")
     reqs_p.add_argument("req_group", action="store", nargs="*",
@@ -619,11 +670,10 @@ def main():
 
     if args.cmd == "install":
         parcyl_py = Path(f"parcyl.py")
-        if parcyl_py.exists():
-            # TODO: -f, --force
-            print(f"{parcyl_py} already exists, remove and try again",
-                  file=sys.stderr)
+        if parcyl_py.exists() and not args.force:
+            print(f"{parcyl_py} already exists (use --force to overwrite)", file=sys.stderr)
             return 1
+
         print(f"Writing {parcyl_py}")
         parcyl_py.write_bytes(Path(__file__).read_bytes())
         parcyl_py.chmod(0o755)
@@ -641,6 +691,7 @@ def main():
         p.print_usage()
 
 
-__all__ = ["Setup", "setup", "find_packages"]
+find_packages = setuptools.find_packages
+__all__ = ["Setup", "setup", "find_packages", "find_package_files"]
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(_main() or 0)
