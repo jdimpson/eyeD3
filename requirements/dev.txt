@@ -10,7 +10,7 @@ babel>=1.3,!=2.0                         # Required by Sphinx
 docutils>=0.11                           # Required by Sphinx
 imagesize==1.1.0                         # Required by Sphinx
 packaging==19.0                          # Required by Sphinx
-requests>=2.0.0,!=2.15,!=2.16,>=2.5.0    # Required by Sphinx,twine
+requests>=2.5.0,!=2.16,!=2.15            # Required by Sphinx,twine
 setuptools>=0.7.0                        # Required by Sphinx,twine
 six>=1.5                                 # Required by Sphinx
 snowballstemmer>=1.1                     # Required by Sphinx

@@ -2,6 +2,6 @@ pillow==5.4.1
 pylast==3.0.0
 certifi>=2017.4.17                       # Required by requests
 chardet>=3.0.2,<3.1.0                    # Required by requests
-idna<2.9,>=2.5                           # Required by requests
-urllib3<1.25,>=1.21.1                    # Required by requests
+idna>=2.5,<2.9                           # Required by requests
+urllib3>=1.21.1,<1.25                    # Required by requests
 requests==2.21.0

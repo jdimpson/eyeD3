@@ -167,13 +167,6 @@ class Setup:
             Path(info_file).write_text(f"""
 import dataclasses
 
-project_name = "{self.attrs['name']}"
-version      = "{self.attrs['version']}"
-release_name = "{self.attrs['release_name']}"
-author       = "{self.attrs['author']}"
-author_email = "{self.attrs['author_email']}"
-years        = "{self.attrs['years']}"
-
 @dataclasses.dataclass
 class Version:
     major: int
@@ -182,8 +175,15 @@ class Version:
     release: str
     release_name: str
 
+project_name = "{self.attrs['name']}"
+version      = "{self.attrs['version']}"
+release_name = "{self.attrs['release_name']}"
+author       = "{self.attrs['author']}"
+author_email = "{self.attrs['author_email']}"
+years        = "{self.attrs['years']}"
 version_info = Version({vinfo.major}, {vinfo.minor}, {vinfo.maint}, "{vinfo.release}", "{self.attrs['release_name']}")
-""".strip())   # noqa: E501
+# flake8: noqa
+""".lstrip())   # noqa: E501
 
     def __call__(self, add_status_classifiers=True, **setup_attrs):
         attrs = {}

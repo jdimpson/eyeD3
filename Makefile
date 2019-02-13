@@ -69,6 +69,7 @@ clean-pyc:
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test:
+	tox -e clean
 	rm -fr .tox/
 	rm -f .coverage
 	find . -name '.pytest_cache' -type d -exec rm -rf {} +
@@ -88,7 +89,7 @@ test:
 	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) ${TEST_DIR}
 
 test-all:
-	tox
+	tox --parallel=all
 
 test-data:
 	# Move these to eyed3.nicfit.net
@@ -106,9 +107,7 @@ pkg-test-data:
 	 tar czf ./build/${TEST_DATA_FILE} -C ./src/test ./eyeD3-test-data
 
 coverage:
-	pytest --cov=./src/eyed3 \
-           --cov-report=html --cov-report term \
-           --cov-config=setup.cfg ${TEST_DIR}
+	tox -e default,coverage
 
 coverage-view: coverage
 	${BROWSER} build/tests/coverage/index.html;\
