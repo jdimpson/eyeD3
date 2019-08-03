@@ -1,21 +1,3 @@
-# -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2007-2012  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
 import os
 import string
 import shutil
@@ -317,11 +299,18 @@ class Tag(core.Tag):
 
     def _setNum(self, fid, val):
         if type(val) is tuple:
-            tn, tt = val
+            if len(val) != 2:
+                raise ValueError("A 2-tuple of int values is required.")
+            else:
+                tn, tt = tuple([int(v) if v is not None else None
+                                    for v in val])
         elif type(val) is int:
             tn, tt = val, None
         elif val is None:
             tn, tt = None, None
+        else:
+            raise TypeError("Invalid value, should int 2-tuple, int, or None: "
+                             f"{val} ({val.__class__.__name__})")
 
         n = (tn, tt)
 
@@ -962,7 +951,6 @@ class Tag(core.Tag):
                                                               b"\x00", 0)
             pending_size += len(tmp_ext_header_data)
 
-        padding_size = 0
         if pending_size > curr_tag_size:
             # current tag (minus padding) larger than the current (plus padding)
             padding_size = DEFAULT_PADDING
@@ -1291,10 +1279,24 @@ class Tag(core.Tag):
             if not fids or f.id in fids:
                 yield f
 
+    def _getOrigArtist(self):
+        return self.getTextFrame(frames.ORIG_ARTIST_FID)
+
+    def _setOrigArtist(self, name):
+        self.setTextFrame(frames.ORIG_ARTIST_FID, name)
+
+    @property
+    def original_artist(self):
+        return self._getOrigArtist()
+
+    @original_artist.setter
+    def original_artist(self, name):
+        self._setOrigArtist(name)
+
 
 class FileInfo:
     """
-    This class is for storing information about a parsed file. It containts info
+    This class is for storing information about a parsed file. It contains info
     such as the filename, original tag size, and amount of padding; all of which
     can make rewriting faster.
     """

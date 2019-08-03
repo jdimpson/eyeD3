@@ -16,7 +16,7 @@ class JsonTagPlugin(eyed3.plugins.LoaderPlugin):
     SUMMARY = "Outputs all tags as JSON."
 
     def __init__(self, arg_parser):
-        super().__init__(arg_parser, cache_files=True, track_images=True)
+        super().__init__(arg_parser, cache_files=True, track_images=False)
         g = self.arg_group
         g.add_argument("-c", "--compact", action="store_true",
                        help="Output in compact form, wound new lines or indentation.")
@@ -85,6 +85,7 @@ _tag_map = {
     'album_artist': str,
     'album_type': str,
     'artist': str,
+    'original_artist': str,
     'artist_origin': list,
     'artist_url': str,
     'audio_file_url': str,
