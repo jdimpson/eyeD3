@@ -10,7 +10,7 @@ include parcyl.py
 graft docs
 prune docs/_build
 
-recursive-include src/test *.py
+recursive-include test *.py
 
 exclude .cookiecutter.yml
 exclude .gitchangelog.rc
@@ -21,8 +21,8 @@ global-exclude *.py[co]
 include requirements.txt
 recursive-include requirements *.txt *.yml
 
-recursive-include src/eyed3 *.py
-include src/eyed3/plugins/DisplayPattern.ebnf
+recursive-include eyed3 *.py
+include eyed3/plugins/DisplayPattern.ebnf
 recursive-include examples *
 
 exclude fabfile.py

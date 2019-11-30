@@ -3,16 +3,85 @@ Release History
 
 .. :changelog:
 
-v0.9a0 (2019-02-09)
--------------------
+v0.9a2 (2019-11-17)
+------------------------
+
+New
+~~~
+- Original artist support (TOPE frame, --orig-artist)
+- Python 3.8 supported.
 
 Changes
 ~~~~~~~
-- Merge 0.9 devel (no more Python2)
+- Regenerated grako parser.
+- Moved src/* to top-level repo directory.
 
 Fix
 ~~~
-- Double quoting matters on env markers, hmm.
+- ID3 v2.3 to v2.4 date conversion.
+- Match mp3 mime-types against all possible mime-types.
+  Specifically, application/x-font-gdos. Fixes #338
+- Fix simple typo: titel -> title. <tim.gates@iress.com>
+- Fixed: load the right config file in arguments. <zhumumu@gmail.com>
+- Fix issue tracker link. Fixes #333.
+- Fixed art plugin when `pylast` is not installed.
+
+Other
+~~~~~
+- Added original_artist for `jsontag`
+- TypeError and ValueError from _setNum.
+
+
+v0.9a1 (2019-03-16)
+------------------------
+
+New
+~~~
+- Dropped Python 2 support.
+- A new `jsontag` plugin for converting tags to JSON.
+- A new `extract` plugin for extracting tags from media.
+- Log warning when ID3 v1.x text truncation occurs. Fixes #299.
+
+Changes
+~~~~~~~
+- New ValueError for _setNum when unknown type/values are passed.
+
+Fix
+~~~
+- [extract] Support only ID3 tags and v1.x tags.
+- [jsontag] No need to track image files.
+- Unbound variable for track num/total.  Fixes #327.
+- Fixed MP3 header search to not false match on BOMs.
+- Honor APIC text encoding when description is "".  #200.
+- Fixed bug with improper types when re-rendering unique file ID. (#324)
+  <gabrieldiegoteixeira@gmail.com>
+- UFID fixes, update (#325)
+  <gabrieldiegoteixeira@gmail.com>
+
+
+v0.8.11 (2019-11-09)
+------------------------
+
+Fix
+~~~
+- ID3 v2.3 to v2.4 date conversion.
+- Match mp3 mime-types against all possible mime-types.
+  Specifically, application/x-font-gdos. Fixes #338
+
+
+v0.8.10 (2019-03-07) : Apples
+------------------------------
+
+New
+~~~
+- Log warning when ID3 v1.x text truncation occurs. Fixes #299.
+
+Fix
+~~~
+- Honor APIC text encoding when description is "".  #200.
+- Fixed bug with improper types when re-rendering unique file ID. (#324)
+  <gabrieldiegoteixeira@gmail.com>
+
 
 v0.8.9 (2019-01-12) : Descent Into...
 --------------------------------------
