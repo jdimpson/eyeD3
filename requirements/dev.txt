@@ -1,0 +1,10 @@
+cogapp
+parcyl>=1.0a4[requirements]
+pdbpp
+Sphinx
+sphinx-issues
+sphinx-rtd-theme
+hg+https://nicfit@bitbucket.org/nicfit/sphinxcontrib-bitbucket
+sphinxcontrib-paverutils
+twine
+wheel

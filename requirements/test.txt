@@ -1,0 +1,5 @@
+factory-boy
+pytest
+pytest-cov
+pytest-runner
+tox
