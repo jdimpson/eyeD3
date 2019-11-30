@@ -203,8 +203,7 @@ Album types:
                 original_release_date = list(orel_dates)[0]
 
             if len(rel_dates) != 1:
-                release_date = reduceDate("release date",
-                                          rel_dates | orel_dates)
+                release_date = reduceDate("release date", rel_dates | orel_dates)
                 rel_dates = {release_date}
             else:
                 release_date = list(rel_dates)[0]
