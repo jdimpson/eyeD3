@@ -10,9 +10,9 @@ class Version:
 
 project_name = "eyeD3"
 version      = "0.9a2"
+version_info = Version(0, 9, 0, "a2", "")
 release_name = ""
 author       = "Travis Shirk"
 author_email = "travis@pobox.com"
 years        = "2002-2019"
-version_info = Version(0, 8, 10, "b0", "")
 # flake8: noqa
