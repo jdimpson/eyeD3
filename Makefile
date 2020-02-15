@@ -13,6 +13,7 @@ PYPI_REPO = pypitest
 PROJECT_NAME = $(shell python setup.py --name 2> /dev/null)
 VERSION = $(shell python setup.py --version 2> /dev/null)
 RELEASE_NAME = $(shell python setup.py --release-name 2> /dev/null)
+RELEASE_TAG = v$(VERSION)
 CHANGELOG = HISTORY.rst
 CHANGELOG_HEADER = v${VERSION} ($(shell date --iso-8601))$(if ${RELEASE_NAME}, : ${RELEASE_NAME},)
 TEST_DATA = eyeD3-test-data
@@ -69,10 +70,11 @@ clean-pyc:
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test:
-	tox -e clean
 	rm -fr .tox/
 	rm -f .coverage
 	find . -name '.pytest_cache' -type d -exec rm -rf {} +
+	-rm .testmondata
+	-rm examples/*.id3
 
 clean-patch:
 	find . -name '*.rej' -exec rm -f '{}' \;
@@ -86,10 +88,15 @@ ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
 test:
-	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) ${TEST_DIR}
+	tox -e default -- $(_PYTEST_OPTS) $(_PDB_OPTS)
+
+test-devel:
+	-tox -e default -- --testmon
 
 test-all:
+	tox -e clean
 	tox --parallel=all
+	tox -e coverage
 
 test-data:
 	# Move these to eyed3.nicfit.net
@@ -104,18 +111,26 @@ clean-test-data:
 	-rm test/${TEST_DATA_FILE}
 
 pkg-test-data:
-	 tar czf ./build/${TEST_DATA_FILE} -C ./test ./eyeD3-test-data
+	test -d build || mkdir build
+	tar czf ./build/${TEST_DATA_FILE} -h --exclude-vcs -C ./test \
+		    ./eyeD3-test-data
+
+publish-test-data:
+	scp ./build/${TEST_DATA_FILE} eyed3.nicfit.net:./data1/eyeD3-releases/
 
 coverage:
-	tox -e default,coverage
+	tox -e coverage
 
-coverage-view: coverage
-	${BROWSER} build/tests/coverage/index.html;\
+coverage-view:
+	@if [ ! -f build/tests/coverage/index.html ]; then \
+		${MAKE} coverage; \
+	fi
+	@${BROWSER} build/tests/coverage/index.html
 
 docs:
 	rm -f docs/eyed3.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -H $(PROJECT_NAME) -V $(VERSION) -o docs/ ${SRC_DIRS}
+	sphinx-apidoc --force -H $(PROJECT_NAME) -V $(VERSION) -o docs/ ${SRC_DIRS}
 	$(MAKE) -C docs clean
 	etc/mycog.py
 	$(MAKE) -C docs html
@@ -138,7 +153,6 @@ pre-release: lint test changelog
 	@# after a clean.
 	@$(MAKE) docs
 	@echo "VERSION: $(VERSION)"
-	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
 	tox -e check-manifest

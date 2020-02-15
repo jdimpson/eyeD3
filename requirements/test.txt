@@ -1,5 +1,6 @@
 factory-boy
 pytest
-pytest-cov
-pytest-runner
+pytest-cov==2.8.1
+pytest-runner==5.2
+pytest-testmon
 tox

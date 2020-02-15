@@ -5,7 +5,7 @@ from pathlib import Path
 
 from eyed3.utils import art
 from eyed3 import log
-from eyed3.utils import guessMimetype
+from eyed3.mimetype import guessMimetype
 from eyed3.plugins import LoaderPlugin
 from eyed3.core import VARIOUS_ARTISTS
 from eyed3.id3.frames import ImageFrame
@@ -20,7 +20,7 @@ try:
     import PIL                                                            # noqa
     _have_PIL = True
 except ImportError:
-    log.info("Install `pillow` and get images details.")
+    log.info("art plugin: Install `pillow` and get images details.")
 
 _have_lastfm = False
 try:
@@ -28,7 +28,7 @@ try:
     import requests
     _have_lastfm = True
 except ImportError:
-    log.info("Install `pylast` and activate the --download option")
+    log.info("art plugin: Install `pylast` and activate the --download option")
 
 
 class ArtFile(object):
@@ -57,8 +57,8 @@ class ArtFile(object):
 
 
 class ArtPlugin(LoaderPlugin):
-    SUMMARY = u"Art for albums, artists, etc."
-    DESCRIPTION = u""
+    SUMMARY = "Art for albums, artists, etc."
+    DESCRIPTION = ""
     NAMES = ["art"]
 
     def __init__(self, arg_parser):

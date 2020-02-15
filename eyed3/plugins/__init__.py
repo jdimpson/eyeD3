@@ -1,10 +1,11 @@
 import os
 import sys
+import pathlib
 
 from eyed3 import core, utils
-from eyed3.utils import guessMimetype
-from eyed3.utils.console import printMsg, printError
 from eyed3.utils.log import getLogger
+from eyed3.utils import guessMimetype, formatSize
+from eyed3.utils.console import printMsg, printError, HEADER_COLOR, boldText, Fore
 
 _PLUGINS = {}
 
@@ -52,8 +53,7 @@ def load(name=None, reload=False, paths=None):
 
                 mod_name = os.path.splitext(f)[0]
                 try:
-                    mod = __import__(mod_name, globals=globals(),
-                                     locals=locals())
+                    mod = __import__(mod_name, globals=globals(), locals=locals())
                 except ImportError as ex:
                     log.verbose(f"Plugin {(f, d)} requires packages that are not installed: {ex}")
                     continue
@@ -62,7 +62,7 @@ def load(name=None, reload=False, paths=None):
                     continue
 
                 for attr in [getattr(mod, a) for a in dir(mod)]:
-                    if (type(attr) == type and issubclass(attr, Plugin)):
+                    if type(attr) == type and issubclass(attr, Plugin):
                         # This is a eyed3.plugins.Plugin
                         PluginClass = attr
                         if (PluginClass not in list(_PLUGINS.values()) and
@@ -85,7 +85,7 @@ def load(name=None, reload=False, paths=None):
             if d in sys.path:
                 sys.path.remove(d)
 
-    log.debug("Plugins loaded: %s", _PLUGINS)
+    log.debug(f"Plugins loaded: {_PLUGINS}")
     if name:
         # If a specific plugin was requested and we've not returned yet...
         return None
@@ -95,20 +95,19 @@ def load(name=None, reload=False, paths=None):
 class Plugin(utils.FileHandler):
     """Base class for all eyeD3 plugins"""
 
-    SUMMARY = u"eyeD3 plugin"
-    """One line about the plugin"""
+    # One line about the plugin
+    SUMMARY = "eyeD3 plugin"
 
-    DESCRIPTION = u""
-    """Detailed info about the plugin"""
+    # Detailed info about the plugin
+    DESCRIPTION = ""
 
+    # A list of **at least** one name for invoking the plugin, values [1:] are treated as alias
     NAMES = []
-    """A list of **at least** one name for invoking the plugin, values [1:]
-    are treated as alias"""
 
     def __init__(self, arg_parser):
         self.arg_parser = arg_parser
-        self.arg_group = arg_parser.add_argument_group(
-                "Plugin options", u"%s\n%s" % (self.SUMMARY, self.DESCRIPTION))
+        self.arg_group = arg_parser.add_argument_group("Plugin options",
+                                                       f"{self.SUMMARY}\n{self.DESCRIPTION}")
 
     def start(self, args, config):
         """Called after command line parsing but before any paths are
@@ -125,6 +124,28 @@ class Plugin(utils.FileHandler):
         The return value is passed to sys.exit (None results in 0)."""
         pass
 
+    @staticmethod
+    def _getHardRule(width):
+        return "-" * width
+
+    @staticmethod
+    def _getFileHeader(path, width):
+        path = pathlib.Path(path)
+        file_size = path.stat().st_size
+        path_str = str(path)
+        size_str = formatSize(file_size)
+        size_len = len(size_str) + 5
+        if len(path_str) + size_len >= width:
+            path_str = "..." + str(path)[-(75 - size_len):]
+        padding_len = width - len(path_str) - size_len
+
+        return "{path}{color}{padding}[ {size} ]{reset}"\
+               .format(path=boldText(path_str, c=HEADER_COLOR()),
+                       color=HEADER_COLOR(),
+                       padding=" " * padding_len,
+                       size=size_str,
+                       reset=Fore.RESET)
+
 
 class LoaderPlugin(Plugin):
     """A base class that provides auto loading of audio files"""
@@ -133,10 +154,11 @@ class LoaderPlugin(Plugin):
         """Constructor. If ``cache_files`` is True (off by default) then each
         AudioFile is appended to ``_file_cache`` during ``handleFile`` and
         the list is cleared by ``handleDirectory``."""
-        super(LoaderPlugin, self).__init__(arg_parser)
+        super().__init__(arg_parser)
         self._num_loaded = 0
         self._file_cache = [] if cache_files else None
         self._dir_images = [] if track_images else None
+        self.audio_file = None
 
     def handleFile(self, f, *args, **kwargs):
         """Loads ``f`` and sets ``self.audio_file`` to an instance of
@@ -145,7 +167,6 @@ class LoaderPlugin(Plugin):
 
         The ``*args`` and ``**kwargs`` are passed to :func:`eyed3.core.load`.
         """
-        self.audio_file = None
 
         try:
             self.audio_file = core.load(f, *args, **kwargs)
@@ -176,4 +197,4 @@ class LoaderPlugin(Plugin):
     def handleDone(self):
         """If no audio files were loaded this simply prints 'Nothing to do'."""
         if self._num_loaded == 0:
-            printMsg("Nothing to do")
+            printMsg("No audio files found.")

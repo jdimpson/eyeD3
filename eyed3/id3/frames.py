@@ -129,7 +129,7 @@ class Frame(object):
 
     @requireBytes(1)
     def _disassembleFrame(self, data):
-        assert(self.header)
+        assert self.header
         header = self.header
         # Format flags in the frame header may add extra data to the
         # beginning of this data.
@@ -176,7 +176,7 @@ class Frame(object):
 
     @requireBytes(1)
     def _assembleFrame(self, data):
-        assert(self.header)
+        assert self.header
         header = self.header
 
         # eyeD3 never writes unsync'd frames
@@ -210,12 +210,12 @@ class Frame(object):
 
     @property
     def text_delim(self):
-        assert(self.encoding is not None)
+        assert self.encoding is not None
         return b"\x00\x00" if self.encoding in (UTF_16_ENCODING,
                                                 UTF_16BE_ENCODING) else b"\x00"
 
     def _initEncoding(self):
-        assert(self.header.version and len(self.header.version) == 3)
+        assert self.header.version and len(self.header.version) == 3
         curr_enc = self.encoding
 
         if self.encoding is not None:
@@ -236,8 +236,7 @@ class Frame(object):
             else:
                 self.encoding = UTF_8_ENCODING
 
-        log.debug("_initEncoding: was={} now={}".format(curr_enc,
-                                                        self.encoding))
+        log.debug(f"_initEncoding: was={curr_enc} now={self.encoding}")
 
     @property
     def encoding(self):
@@ -247,8 +246,9 @@ class Frame(object):
     def encoding(self, enc):
         if not isinstance(enc, bytes):
             raise TypeError("encoding argument must be a byte string.")
-        elif not (LATIN1_ENCODING <= enc <= UTF_8_ENCODING):
-            raise ValueError("Unknown encoding value {}".format(enc))
+        elif not LATIN1_ENCODING <= enc <= UTF_8_ENCODING:
+            log.warning("Unknown encoding value {}".format(enc))
+            enc = LATIN1_ENCODING
         self._encoding = enc
 
 
@@ -287,17 +287,16 @@ class TextFrame(Frame):
         try:
             self.text = decodeUnicode(text_data, self.encoding)
         except UnicodeDecodeError as err:
-            log.warning("Error decoding text frame {fid}: {err}"
-                        .format(fid=self.id, err=err))
-            self.test = ""
+            log.warning(f"Error decoding text frame {self.id}: {err}")
+            self.text = ""
         log.debug("TextFrame text: %s" % self.text)
 
     def render(self):
         self._initEncoding()
         self.data = (self.encoding +
                      self.text.encode(id3EncodingToString(self.encoding)))
-        assert(type(self.data) is bytes)
-        return super(TextFrame, self).render()
+        assert type(self.data) is bytes
+        return super().render()
 
 
 class UserTextFrame(TextFrame):
@@ -350,28 +349,27 @@ class UserTextFrame(TextFrame):
 class DateFrame(TextFrame):
     def __init__(self, id, date=""):
         assert(id in DATE_FIDS or id in DEPRECATED_DATE_FIDS)
-        super(DateFrame, self).__init__(id, text=str(date))
+        super().__init__(id, text=str(date))
         self.date = self.text
         self.encoding = LATIN1_ENCODING
 
     def parse(self, data, frame_header):
-        super(DateFrame, self).parse(data, frame_header)
+        super().parse(data, frame_header)
         try:
             if self.text:
                 _ = core.Date.parse(self.text)                        # noqa
         except ValueError:
             # Date is invalid, log it and reset.
-            core.parseError(FrameException("Invalid date: " + self.text))
-            self.text = u''
+            core.parseError(FrameException(f"Invalid date: {self.text}"))
+            self.text = ""
 
     @property
     def date(self):
-        return core.Date.parse(self.text.encode("latin1")) if self.text \
-                                                           else None
+        return core.Date.parse(self.text.encode("latin1")) if self.text else None
 
-    # \a date Either an ISO 8601 date string or a eyed3.core.Date object.
     @date.setter
     def date(self, date):
+        """Set value with a either an ISO 8601 date string or a eyed3.core.Date object."""
         if not date:
             self.text = ""
             return
@@ -526,6 +524,7 @@ class ImageFrame(Frame):
         self.image_data = image_data
         self.image_url = image_url
 
+        # XXX: Add this member as `type` and deprecate picture_type??
         self.picture_type = picture_type
         self.mime_type = mime_type
 
@@ -745,9 +744,9 @@ class ImageFrame(Frame):
 
 class ObjectFrame(Frame):
     @requireUnicode("description", "filename")
-    def __init__(self, id=OBJECT_FID, description="", filename="",
+    def __init__(self, fid=OBJECT_FID, description="", filename="",
                  object_data=None, mime_type=None):
-        super(ObjectFrame, self).__init__(OBJECT_FID)
+        super().__init__(fid)
         self.description = description
         self.filename = filename
         self.mime_type = mime_type
@@ -853,8 +852,12 @@ class PrivateFrame(Frame):
     """PRIV"""
 
     def __init__(self, id=PRIVATE_FID, owner_id=b"", owner_data=b""):
-        super(PrivateFrame, self).__init__(id)
-        assert(id == PRIVATE_FID)
+        super().__init__(id)
+        assert id == PRIVATE_FID
+        for arg in (owner_id, owner_data):
+            if type(arg) is not bytes:
+                raise ValueError("PRIV owner fields require bytes type")
+
         self.owner_id = owner_id
         self.owner_data = owner_data
 
@@ -1111,15 +1114,15 @@ class DescriptionLangTextFrame(Frame, LanguageCodeMixin):
     def parse(self, data, frame_header):
         super(DescriptionLangTextFrame, self).parse(data, frame_header)
 
-        self.encoding = encoding = self.data[0:1]
+        self.encoding = self.data[0:1]
         self.lang = self.data[1:4]
         log.debug("%s lang: %s" % (self.id, self.lang))
 
         try:
-            (d, t) = splitUnicode(self.data[4:], encoding)
-            self.description = decodeUnicode(d, encoding)
+            (d, t) = splitUnicode(self.data[4:], self.encoding)
+            self.description = decodeUnicode(d, self.encoding)
             log.debug("%s description: %s" % (self.id, self.description))
-            self.text = decodeUnicode(t, encoding)
+            self.text = decodeUnicode(t, self.encoding)
             log.debug("%s text: %s" % (self.id, self.text))
         except ValueError:
             log.warning("Invalid %s frame; no description/text" % self.id)
@@ -1391,7 +1394,7 @@ class ChapterFrame(Frame):
                                                         DESCRIPTION, url)
 
 
-# XXX: This data structure pretty sucks, or it is beautiful anarchy
+# XXX: This data structure pretty much sucks, or it is beautiful anarchy
 class FrameSet(dict):
     def __init__(self):
         dict.__init__(self)
@@ -1534,8 +1537,6 @@ def deunsyncData(data):
 # Create and return the appropriate frame.
 def createFrame(tag_header, frame_header, data):
     fid = frame_header.id
-    FrameClass = None
-
     if fid in ID3_FRAMES:
         (desc, ver, FrameClass) = ID3_FRAMES[fid]
     elif fid in NONSTANDARD_ID3_FRAMES:
@@ -1591,7 +1592,8 @@ def splitUnicode(data, encoding):
     except ValueError as ex:
         log.warning("Invalid 2-tuple ID3 frame data: %s", ex)
         d, t = data, b""
-    return (d, t)
+
+    return d, t
 
 
 def id3EncodingToString(encoding):
