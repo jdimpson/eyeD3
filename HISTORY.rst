@@ -3,6 +3,44 @@ Release History
 
 .. :changelog:
 
+v0.9.5 (2020-03-28) : I Knew Her, She Knew Me
+----------------------------------------------
+
+Fix
+~~~
+- `eyeD3 --genre ""` to clear genre frame restored.
+- Genre id->name mapping for non-standard genres and custom maps.
+
+
+v0.9.4 (2020-03-21) : The Devil Made Me Do It
+-----------------------------------------------
+
+New
+~~~
+- Relative volume adjustments (RVA2 and RVAD) (#399)
+- Tag properties copyright and encoded_by
+- Support GRP1 (Apple) frames.
+
+Changes
+~~~~~~~
+- Genre serialization not ID3 v2.3 format by default, and other genre cleanup (#402)
+  fixes #382
+
+Fix
+~~~
+- Date correctness between ID3 versions (#396)
+- PopularityFrame email encoding bug.
+- Plugins more featured in docs
+
+
+v0.9.3 (2020-03-01) : It Dawned On Me
+--------------------------------------
+
+Changes
+~~~~~~~
+- Track/disc numbers can be set with integer strings.
+- Disc number getter and setter hooks
+
 v0.9.2 (2020-02-10) : Into The Future
 --------------------------------------
 

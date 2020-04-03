@@ -202,13 +202,6 @@ def test_DateFrame():
         date.date = d
         assert not date.date
 
-        try:
-            date.date = 9
-        except TypeError:
-            pass
-        else:
-            pytest.fail("TypeError not thrown")
-
 
 def test_compression():
     f = open(__file__, "rb")
@@ -233,10 +226,8 @@ def test_tag_compression(id3tag):
 
 
 def test_encryption():
-    with pytest.raises(NotImplementedError):
-        Frame.encrypt("Iceburn")
-    with pytest.raises(NotImplementedError):
-        Frame.decrypt("Iceburn")
+    assert "Iceburn" == Frame.encrypt("Iceburn")
+    assert "Iceburn" == Frame.decrypt("Iceburn")
 
 
 def test_LanguageCodeMixin():

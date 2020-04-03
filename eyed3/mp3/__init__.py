@@ -133,10 +133,7 @@ class Mp3AudioInfo(core.AudioInfo):
     @property
     def bit_rate_str(self):
         (vbr, bit_rate) = self.bit_rate
-        brs = "%d kb/s" % bit_rate
-        if vbr:
-            brs = "~" + brs
-        return brs
+        return f"{'~' if vbr else ''}{bit_rate} kb/s"
 
 
 class Mp3AudioFile(core.AudioFile):
@@ -146,10 +143,10 @@ class Mp3AudioFile(core.AudioFile):
         self._tag_version = version
 
         super().__init__(path)
-        assert(self.type == core.AUDIO_MP3)
+        assert self.type == core.AUDIO_MP3
 
     def _read(self):
-        with open(self.path, 'rb') as file_obj:
+        with open(self.path, "rb") as file_obj:
             self._tag = id3.Tag()
             tag_found = self._tag.parse(file_obj, self._tag_version)
 
@@ -173,8 +170,7 @@ class Mp3AudioFile(core.AudioFile):
             self.type = core.AUDIO_MP3
 
     def initTag(self, version=id3.ID3_DEFAULT_VERSION):
-        """Add a id3.Tag to the file (removing any existing tag if one exists).
-        """
+        """Add a id3.Tag to the file (removing any existing tag if one exists)."""
         self.tag = id3.Tag()
         self.tag.version = version
         self.tag.file_info = id3.FileInfo(self.path)

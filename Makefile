@@ -115,7 +115,7 @@ pkg-test-data:
 	tar czf ./build/${TEST_DATA_FILE} -h --exclude-vcs -C ./test \
 		    ./eyeD3-test-data
 
-publish-test-data:
+publish-test-data: pkg-test-data
 	scp ./build/${TEST_DATA_FILE} eyed3.nicfit.net:./data1/eyeD3-releases/
 
 coverage:
@@ -130,7 +130,7 @@ coverage-view:
 docs:
 	rm -f docs/eyed3.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc --force -H $(PROJECT_NAME) -V $(VERSION) -o docs/ ${SRC_DIRS}
+	sphinx-apidoc --force -H "$(shell echo $(PROJECT_NAME) | tr '[:upper:]' '[:lower:]') module" -V $(VERSION) -o docs/ ${SRC_DIRS}
 	$(MAKE) -C docs clean
 	etc/mycog.py
 	$(MAKE) -C docs html
@@ -241,12 +241,12 @@ pypi-release:
         fi \
 	done
 
-sdist: build
+sdist: clean build
 	python setup.py sdist --formats=gztar,zip
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
 
-dist: clean sdist docs-dist
+dist: sdist docs-dist
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
 	for f in $$(ls); do \
