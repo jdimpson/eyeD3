@@ -1,5 +1,12 @@
 import dataclasses
 
+project_name = "eyeD3"
+version      = "0.8.10b0"
+release_name = ""
+author       = "Travis Shirk"
+author_email = "travis@pobox.com"
+years        = "2002-2019"
+
 @dataclasses.dataclass
 class Version:
     major: int
@@ -8,11 +15,4 @@ class Version:
     release: str
     release_name: str
 
-project_name = "eyeD3"
-version      = "0.9a2"
-version_info = Version(0, 9, 0, "a2", "")
-release_name = ""
-author       = "Travis Shirk"
-author_email = "travis@pobox.com"
-years        = "2002-2019"
-# flake8: noqa
+version_info = Version(0, 8, 10, "b0", "")
