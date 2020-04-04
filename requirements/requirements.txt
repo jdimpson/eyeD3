@@ -1,0 +1,8 @@
+dataclasses ; python_version < "3.7"
+deprecation
+filetype
+grako
+pillow
+pylast
+requests
+ruamel.yaml

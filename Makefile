@@ -172,7 +172,7 @@ pre-release: lint test changelog
 
 
 requirements:
-	parcyl.py requirements --upgrade --deep
+	parcyl.py requirements -R -C
 
 
 changelog:
