@@ -53,7 +53,7 @@ class ArtistOrigin:
         return "\t".join([(o if o else "") for o in dataclasses.astuple(self)])
 
 
-def load(path, tag_version=None):
+def load(path, tag_version=None, ignore_extension=False):
     """Loads the file identified by ``path`` and returns a concrete type of
     :class:`eyed3.core.AudioFile`. If ``path`` is not a file an ``IOError`` is
     raised. ``None`` is returned when the file type (i.e. mime-type) is not
@@ -80,7 +80,7 @@ def load(path, tag_version=None):
     else:
         raise IOError(f"file not found: {path}")
 
-    mtype = guessMimetype(path)
+    mtype = guessMimetype(path, ignore_extension=ignore_extension)
     log.debug(f"File mime-type: {mtype}")
 
     if mtype in mp3.MIME_TYPES:

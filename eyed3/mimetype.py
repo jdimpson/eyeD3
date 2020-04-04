@@ -2,14 +2,14 @@ import pathlib
 import filetype
 from io import BytesIO
 from .id3 import ID3_MIME_TYPE, ID3_MIME_TYPE_EXTENSIONS
-from .mp3 import MIME_TYPES as MP3_MIME_TYPES
+from .mp3 import MIME_TYPES as MP3_MIME_TYPES, EXTENSIONS as MP3_EXTENSIONS
 from .utils.log import getLogger
 from filetype.utils import _NUM_SIGNATURE_BYTES
 
 log = getLogger(__name__)
 
 
-def guessMimetype(filename):
+def guessMimetype(filename, ignore_extension=False):
     """Return the mime-type for `filename`."""
 
     path = pathlib.Path(filename) if not isinstance(filename, pathlib.Path) else filename
@@ -37,8 +37,8 @@ def guessMimetype(filename):
         if path.suffix in ID3_MIME_TYPE_EXTENSIONS:
             if Id3Tag().match(buf) or Id3TagExt().match(buf):
                 return Id3TagExt.MIME
-
-        return filetype.guess_mime(buf)
+        elif ignore_extension or path.suffix.lower() in MP3_EXTENSIONS:
+            return filetype.guess_mime(buf)
 
 
 class Mp2x(filetype.Type):
