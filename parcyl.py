@@ -20,7 +20,8 @@ from setuptools.command.test import test as _TestCommand
 from setuptools.command.develop import develop as _DevelopCommand
 from setuptools.command.install import install as _InstallCommand
 
-VERSION = "1.0a4"
+# FIXME: dup'd in setup.cfg, which should be the source of truth
+VERSION = "1.0a5"
 
 _EXTRA = "extra_"
 _REQ_D = Path("requirements")
@@ -160,12 +161,6 @@ class Setup:
             Path(info_file).write_text(f"""
 import dataclasses
 
-project_name = "{self.attrs['name']}"
-version      = "{self.attrs['version']}"
-release_name = "{self.attrs['release_name']}"
-author       = "{self.attrs['author']}"
-author_email = "{self.attrs['author_email']}"
-years        = "{self.attrs['years']}"
 
 @dataclasses.dataclass
 class Version:
@@ -175,6 +170,13 @@ class Version:
     release: str
     release_name: str
 
+
+project_name = "{self.attrs['name']}"
+version = "{self.attrs['version']}"
+release_name = "{self.attrs['release_name']}"
+author = "{self.attrs['author']}"
+author_email = "{self.attrs['author_email']}"
+years = "{self.attrs['years']}"
 version_info = Version({vinfo.major}, {vinfo.minor}, {vinfo.maint}, "{vinfo.release}", "{self.attrs['release_name']}")
 """.strip())   # noqa: E501
 
